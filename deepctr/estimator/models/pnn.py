@@ -83,7 +83,7 @@ def PNNEstimator(dnn_feature_columns, dnn_hidden_units=(256, 128, 64), l2_reg_em
             dnn_input = combined_dnn_input([deep_input], dense_value_list)
             dnn_out = DNN(dnn_hidden_units, dnn_activation, l2_reg_dnn, dnn_dropout, False, seed=seed)(dnn_input, training=train_flag)
             dnn_logit = tf.keras.layers.Dense(
-                1, use_bias=False, kernel_initializer=tf.keras.initializers.glorot_normal(seed))(dnn_out)
+                1, use_bias=False, kernel_initializer=tf.compat.v1.keras.initializers.glorot_normal(seed))(dnn_out)
 
         logits = linear_logits + dnn_logit
 

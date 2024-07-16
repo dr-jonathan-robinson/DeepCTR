@@ -6,8 +6,8 @@ Author:
 
 """
 import tensorflow as tf
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.layers import Flatten, Layer, Add
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Flatten, Layer, Add
 from tensorflow.python.ops.lookup_ops import TextFileInitializer
 
 try:
@@ -15,7 +15,7 @@ try:
 except ImportError:
     from tensorflow.python.ops.init_ops_v2 import Zeros, glorot_normal
 
-from tensorflow.python.keras.regularizers import l2
+from tensorflow.keras.regularizers import l2
 
 try:
     from tensorflow.python.ops.lookup_ops import StaticHashTable
@@ -100,7 +100,7 @@ class Hash(Layer):
 
         num_buckets = self.num_buckets if not self.mask_zero else self.num_buckets - 1
         try:
-            hash_x = tf.string_to_hash_bucket_fast(x, num_buckets,
+            hash_x = tf.strings.to_hash_bucket_fast(x, num_buckets,
                                                    name=None)  # weak hash
         except AttributeError:
             hash_x = tf.strings.to_hash_bucket_fast(x, num_buckets,
@@ -249,10 +249,10 @@ def reduce_mean(input_tensor,
                 reduction_indices=None):
     try:
         return tf.reduce_mean(input_tensor,
-                              axis=axis,
-                              keep_dims=keep_dims,
+                              #axis=axis,
+                              keepdims=keep_dims,
                               name=name,
-                              reduction_indices=reduction_indices)
+                              axis=reduction_indices)
     except TypeError:
         return tf.reduce_mean(input_tensor,
                               axis=axis,
@@ -267,10 +267,10 @@ def reduce_sum(input_tensor,
                reduction_indices=None):
     try:
         return tf.reduce_sum(input_tensor,
-                             axis=axis,
-                             keep_dims=keep_dims,
+                             #axis=axis,
+                             keepdims=keep_dims,
                              name=name,
-                             reduction_indices=reduction_indices)
+                             axis=reduction_indices)
     except TypeError:
         return tf.reduce_sum(input_tensor,
                              axis=axis,
@@ -285,10 +285,10 @@ def reduce_max(input_tensor,
                reduction_indices=None):
     try:
         return tf.reduce_max(input_tensor,
-                             axis=axis,
-                             keep_dims=keep_dims,
+                             #axis=axis,
+                             keepdims=keep_dims,
                              name=name,
-                             reduction_indices=reduction_indices)
+                             axis=reduction_indices)
     except TypeError:
         return tf.reduce_max(input_tensor,
                              axis=axis,
@@ -298,14 +298,14 @@ def reduce_max(input_tensor,
 
 def div(x, y, name=None):
     try:
-        return tf.div(x, y, name=name)
+        return tf.compat.v1.div(x, y, name=name)
     except AttributeError:
         return tf.divide(x, y, name=name)
 
 
 def softmax(logits, dim=-1, name=None):
     try:
-        return tf.nn.softmax(logits, dim=dim, name=name)
+        return tf.nn.softmax(logits, axis=dim, name=name)
     except TypeError:
         return tf.nn.softmax(logits, axis=dim, name=name)
 

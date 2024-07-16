@@ -8,7 +8,7 @@ def linear_model(features, linear_feature_columns):
     if tf.__version__ >= '2.0.0':
         linear_logits = tf.compat.v1.feature_column.linear_model(features, linear_feature_columns)
     else:
-        linear_logits = tf.feature_column.linear_model(features, linear_feature_columns)
+        linear_logits = tf.compat.v1.feature_column.linear_model(features, linear_feature_columns)
     return linear_logits
 
 

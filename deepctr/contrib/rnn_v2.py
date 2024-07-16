@@ -1066,7 +1066,7 @@ def dynamic_rnn(cell, inputs, att_scores=None, sequence_length=None, initial_sta
     # Variable using the same placement as for the rest of the RNN.
 
     try:
-        resue = tf.AUTO_REUSE
+        resue = tf.compat.v1.AUTO_REUSE
     except:
         resue = tf.compat.v1.AUTO_REUSE
 

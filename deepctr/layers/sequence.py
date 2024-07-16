@@ -8,14 +8,14 @@ Author:
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras import backend as K
+from tensorflow.keras import backend as K
 
 try:
     from tensorflow.python.ops.init_ops import TruncatedNormal, Constant, glorot_uniform_initializer as glorot_uniform
 except ImportError:
     from tensorflow.python.ops.init_ops_v2 import TruncatedNormal, Constant, glorot_uniform
 
-from tensorflow.python.keras.layers import LSTM, Lambda, Layer, Dropout
+from tensorflow.keras.layers import LSTM, Lambda, Layer, Dropout
 
 from .core import LocalActivationUnit
 from .normalization import LayerNormalization
@@ -161,7 +161,7 @@ class WeightedSequenceLayer(Layer):
             paddings = tf.ones_like(value_input) * (-2 ** 32 + 1)
         else:
             paddings = tf.zeros_like(value_input)
-        value_input = tf.where(mask, value_input, paddings)
+        value_input = tf.compat.v1.where(mask, value_input, paddings)
 
         if self.weight_normalization:
             value_input = softmax(value_input, dim=1)
@@ -272,7 +272,7 @@ class AttentionSequencePoolingLayer(Layer):
         else:
             paddings = tf.zeros_like(outputs)
 
-        outputs = tf.where(key_masks, outputs, paddings)
+        outputs = tf.compat.v1.where(key_masks, outputs, paddings)
 
         if self.weight_normalization:
             outputs = softmax(outputs)
@@ -547,8 +547,8 @@ class Transformer(Layer):
 
             outputs = outputs / (K_.get_shape().as_list()[-1] ** 0.5)
         elif self.attention_type == "cos":
-            Q_cos = tf.nn.l2_normalize(Q_, dim=-1)
-            K_cos = tf.nn.l2_normalize(K_, dim=-1)
+            Q_cos = tf.nn.l2_normalize(Q_, axis=-1)
+            K_cos = tf.nn.l2_normalize(K_, axis=-1)
 
             outputs = tf.matmul(Q_cos, K_cos, transpose_b=True)  # h*N T_q T_k
 
@@ -578,10 +578,10 @@ class Transformer(Layer):
 
         # (h*N, T_q, T_k)
 
-        outputs = tf.where(tf.equal(key_masks, 1), outputs, paddings, )
+        outputs = tf.compat.v1.where(tf.equal(key_masks, 1), outputs, paddings, )
         if self.blinding:
             try:
-                outputs = tf.matrix_set_diag(outputs, tf.ones_like(outputs)[
+                outputs = tf.linalg.set_diag(outputs, tf.ones_like(outputs)[
                                                       :, :, 0] * (-2 ** 32 + 1))
             except AttributeError:
                 outputs = tf.compat.v1.matrix_set_diag(outputs, tf.ones_like(outputs)[
@@ -770,7 +770,7 @@ class DynamicGRU(Layer):
             self.gru_cell = VecAttGRUCell(self.num_units)
         else:
             try:
-                self.gru_cell = tf.nn.rnn_cell.GRUCell(self.num_units)  # GRUCell
+                self.gru_cell = tf.compat.v1.nn.rnn_cell.GRUCell(self.num_units)  # GRUCell
             except AttributeError:
                 self.gru_cell = tf.compat.v1.nn.rnn_cell.GRUCell(self.num_units)
 

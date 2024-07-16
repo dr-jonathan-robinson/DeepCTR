@@ -10,7 +10,7 @@ def make_example(line, sparse_feature_name, dense_feature_name, label_name):
 
 
 def write_tfrecord(filename, df, sparse_feature_names, dense_feature_names, label_name):
-    writer = tf.python_io.TFRecordWriter(filename)
+    writer = tf.io.TFRecordWriter(filename)
     for line in df.iterrows():
         ex = make_example(line, sparse_feature_names, dense_feature_names, label_name)
         writer.write(ex.SerializeToString())

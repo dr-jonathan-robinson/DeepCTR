@@ -13,7 +13,7 @@ model.load_weights('DeepFM_w.h5')
 To save/load models,just a little different.
 
 ```python
-from tensorflow.python.keras.models import  save_model,load_model
+from tensorflow.keras.models import  save_model,load_model
 model = DeepFM()
 save_model(model, 'DeepFM.h5')# save_model, same as before
 
@@ -27,8 +27,8 @@ Here is a example of how to set learning rate and earlystopping:
 
 ```python
 import deepctr
-from tensorflow.python.keras.optimizers import Adam,Adagrad
-from tensorflow.python.keras.callbacks import EarlyStopping
+from tensorflow.keras.optimizers import Adam,Adagrad
+from tensorflow.keras.callbacks import EarlyStopping
 
 model = deepctr.models.DeepFM(linear_feature_columns,dnn_feature_columns)
 model.compile(Adagrad(0.1024),'binary_crossentropy',metrics=['binary_crossentropy'])
@@ -61,8 +61,8 @@ import itertools
 import deepctr
 from deepctr.models import AFM
 from deepctr.feature_column import get_feature_names
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import Lambda
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Lambda
 
 model = AFM(linear_feature_columns,dnn_feature_columns)
 model.fit(model_input,target)

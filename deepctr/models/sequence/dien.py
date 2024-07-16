@@ -8,8 +8,8 @@ Reference:
 """
 
 import tensorflow as tf
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import (Concatenate, Dense, Permute, multiply, Flatten)
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import (Concatenate, Dense, Permute, multiply, Flatten)
 
 from ...feature_column import SparseFeat, VarLenSparseFeat, DenseFeat, build_input_features
 from ...inputs import get_varlen_pooling_list, create_embedding_matrix, embedding_lookup, varlen_embedding_lookup, \
@@ -44,14 +44,14 @@ def auxiliary_loss(h_states, click_seq, noclick_seq, mask, stag=None):
                     :, :, 0]  # [B,T-1]
 
     try:
-        click_loss_ = - tf.reshape(tf.log(click_prop_),
+        click_loss_ = - tf.reshape(tf.math.log(click_prop_),
                                    [-1, tf.shape(click_seq)[1]]) * mask
     except AttributeError:
         click_loss_ = - tf.reshape(tf.compat.v1.log(click_prop_),
                                    [-1, tf.shape(click_seq)[1]]) * mask
     try:
         noclick_loss_ = - \
-                            tf.reshape(tf.log(1.0 - noclick_prop_),
+                            tf.reshape(tf.math.log(1.0 - noclick_prop_),
                                        [-1, tf.shape(noclick_seq)[1]]) * mask
     except AttributeError:
         noclick_loss_ = - \
@@ -204,7 +204,7 @@ def DIEN(dnn_feature_columns, history_feature_list,
 
     dnn_input = combined_dnn_input([deep_input_emb], dense_value_list)
     output = DNN(dnn_hidden_units, dnn_activation, l2_reg_dnn, dnn_dropout, use_bn, seed=seed)(dnn_input)
-    final_logit = Dense(1, use_bias=False, kernel_initializer=tf.keras.initializers.glorot_normal(seed))(output)
+    final_logit = Dense(1, use_bias=False, kernel_initializer=tf.compat.v1.keras.initializers.glorot_normal(seed))(output)
     output = PredictionLayer(task)(final_logit)
 
     model = Model(inputs=inputs_list, outputs=output)
@@ -212,7 +212,7 @@ def DIEN(dnn_feature_columns, history_feature_list,
     if use_negsampling:
         model.add_loss(alpha * aux_loss_1)
     try:
-        tf.keras.backend.get_session().run(tf.global_variables_initializer())
+        tf.compat.v1.keras.backend.get_session().run(tf.compat.v1.global_variables_initializer())
     except AttributeError:
         tf.compat.v1.keras.backend.get_session().run(tf.compat.v1.global_variables_initializer())
         tf.compat.v1.experimental.output_all_intermediates(True)

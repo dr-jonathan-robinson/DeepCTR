@@ -2,10 +2,10 @@ from deepctr.models import DeepFM
 from deepctr.feature_column import SparseFeat, VarLenSparseFeat, get_feature_names
 import numpy as np
 import pandas as pd
-from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 try:
-    import tensorflow.compat.v1 as tf
+    import tensorflow as tf
 except ImportError as e:
     import tensorflow as tf
 
@@ -48,8 +48,8 @@ if __name__ == "__main__":
     model = DeepFM(linear_feature_columns, dnn_feature_columns, task='regression')
     model.compile("adam", "mse", metrics=['mse'], )
     if not hasattr(tf, 'version') or tf.version.VERSION < '2.0.0':
-        with tf.Session() as sess:
-            sess.run(tf.tables_initializer())
+        with tf.compat.v1.Session() as sess:
+            sess.run(tf.compat.v1.tables_initializer())
             history = model.fit(model_input, data[target].values,
                                 batch_size=256, epochs=10, verbose=2, validation_split=0.2, )
     else:

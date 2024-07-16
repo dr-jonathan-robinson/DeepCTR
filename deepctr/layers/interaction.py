@@ -11,8 +11,8 @@ Authors:
 import itertools
 
 import tensorflow as tf
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.backend import batch_dot
+from tensorflow.keras import backend as K
+from tensorflow.keras.backend import batch_dot
 
 try:
     from tensorflow.python.ops.init_ops import Zeros, Ones, Constant, TruncatedNormal, \
@@ -21,8 +21,8 @@ try:
 except ImportError:
     from tensorflow.python.ops.init_ops_v2 import Zeros, Ones, Constant, TruncatedNormal, glorot_normal, glorot_uniform
 
-from tensorflow.python.keras.layers import Layer, MaxPooling2D, Conv2D, Dropout, Lambda, Dense, Flatten
-from tensorflow.python.keras.regularizers import l2
+from tensorflow.keras.layers import Layer, MaxPooling2D, Conv2D, Dropout, Lambda, Dense, Flatten
+from tensorflow.keras.regularizers import l2
 from tensorflow.python.layers import utils
 
 from .activation import activation_layer
@@ -291,7 +291,7 @@ class CIN(Layer):
             dot_result = tf.transpose(dot_result_o, perm=[1, 0, 2])
 
             curr_out = tf.nn.conv1d(
-                dot_result, filters=self.filters[idx], stride=1, padding='VALID')
+                input=dot_result, filters=self.filters[idx], stride=1, padding='VALID')
 
             curr_out = tf.nn.bias_add(curr_out, self.bias[idx])
 

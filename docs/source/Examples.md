@@ -206,7 +206,7 @@ following codes.
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from deepctr.models import DeepFM
 from deepctr.feature_column import SparseFeat, VarLenSparseFeat, get_feature_names
@@ -278,7 +278,7 @@ if __name__ == "__main__":
 ```python
 import numpy as np
 import pandas as pd
-from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from deepctr.feature_column import SparseFeat, VarLenSparseFeat, get_feature_names
 from deepctr.models import DeepFM
@@ -334,7 +334,7 @@ from deepctr.models import DeepFM
 from deepctr.feature_column import SparseFeat, VarLenSparseFeat, get_feature_names
 import numpy as np
 import pandas as pd
-from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 try:
     import tensorflow.compat.v1 as tf

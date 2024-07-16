@@ -7,8 +7,9 @@ with open("README.md", "r") as fh:
 
 REQUIRED_PACKAGES = [
     'requests',
-    'h5py==3.7.0; python_version>="3.9"',
-    'h5py==2.10.0; python_version<"3.9"'
+    'h5py>=3.7.0; python_version>="3.9"',
+    'h5py==2.10.0; python_version<"3.9"',
+    'tensorflow>=2.4'
 ]
 
 setuptools.setup(
@@ -25,10 +26,10 @@ setuptools.setup(
         exclude=["tests", "tests.models", "tests.layers"]),
     python_requires=">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*",  # '>=3.4',  # 3.4.6
     install_requires=REQUIRED_PACKAGES,
-    extras_require={
-        "cpu": ["tensorflow>=1.4.0,!=1.7.*,!=1.8.*"],
-        "gpu": ["tensorflow-gpu>=1.4.0,!=1.7.*,!=1.8.*"],
-    },
+    # extras_require={
+    #     "cpu": ["tensorflow>=1.4.0,!=1.7.*,!=1.8.*"],
+    #     "gpu": ["tensorflow-gpu>=1.4.0,!=1.7.*,!=1.8.*"],
+    # },
     entry_points={
     },
     classifiers=(

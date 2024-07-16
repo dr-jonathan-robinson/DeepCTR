@@ -8,7 +8,7 @@ Reference:
 """
 
 import tensorflow as tf
-from tensorflow.python.keras.layers import Dense, Flatten
+from tensorflow.keras.layers import Dense, Flatten
 
 from ..feature_column import get_linear_logit, input_from_feature_columns
 from ..utils import deepctr_model_fn, DNN_SCOPE_NAME, variable_scope
@@ -70,7 +70,7 @@ def FiBiNETEstimator(linear_feature_columns, dnn_feature_columns, bilinear_type=
                 [Flatten()(concat_func([senet_bilinear_out, bilinear_out]))], dense_value_list)
             dnn_out = DNN(dnn_hidden_units, dnn_activation, l2_reg_dnn, dnn_dropout, False, seed=seed)(dnn_input, training=train_flag)
             dnn_logit = Dense(
-                1, use_bias=False, kernel_initializer=tf.keras.initializers.glorot_normal(seed))(dnn_out)
+                1, use_bias=False, kernel_initializer=tf.compat.v1.keras.initializers.glorot_normal(seed))(dnn_out)
 
         logits = linear_logits + dnn_logit
 

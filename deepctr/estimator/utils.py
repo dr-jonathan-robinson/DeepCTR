@@ -135,7 +135,7 @@ def get_train_op_fn(linear_optimizer, dnn_optimizer):
     def _train_op_fn(loss):
         train_ops = []
         try:
-            global_step = tf.train.get_global_step()
+            global_step = tf.compat.v1.train.get_global_step()
         except AttributeError:
             global_step = tf.compat.v1.train.get_global_step()
         linear_var_list = get_collection(get_GraphKeys().TRAINABLE_VARIABLES, LINEAR_SCOPE_NAME)
@@ -155,7 +155,7 @@ def get_train_op_fn(linear_optimizer, dnn_optimizer):
         train_op = tf.group(*train_ops)
         with tf.control_dependencies([train_op]):
             try:
-                return tf.assign_add(global_step, 1).op
+                return tf.compat.v1.assign_add(global_step, 1).op
             except AttributeError:
                 return tf.compat.v1.assign_add(global_step, 1).op
 
@@ -164,20 +164,20 @@ def get_train_op_fn(linear_optimizer, dnn_optimizer):
 
 def variable_scope(name_or_scope):
     try:
-        return tf.variable_scope(name_or_scope)
+        return tf.compat.v1.variable_scope(name_or_scope)
     except AttributeError:
         return tf.compat.v1.variable_scope(name_or_scope)
 
 def get_collection(key, scope=None):
     try:
-        return tf.get_collection(key, scope=scope)
+        return tf.compat.v1.get_collection(key, scope=scope)
     except AttributeError:
         return tf.compat.v1.get_collection(key, scope=scope)
 
 
 def get_GraphKeys():
     try:
-        return tf.GraphKeys
+        return tf.compat.v1.GraphKeys
     except AttributeError:
         return tf.compat.v1.GraphKeys
 
@@ -191,7 +191,7 @@ def get_losses():
 
 def input_layer(features, feature_columns):
     try:
-        return tf.feature_column.input_layer(features, feature_columns)
+        return tf.compat.v1.feature_column.input_layer(features, feature_columns)
     except AttributeError:
         return tf.compat.v1.feature_column.input_layer(features, feature_columns)
 
@@ -205,7 +205,7 @@ def get_metrics():
 
 def to_float(x, name="ToFloat"):
     try:
-        return tf.to_float(x, name)
+        return tf.cast(x, name=name, dtype=tf.float32)
     except AttributeError:
         return tf.compat.v1.to_float(x, name)
 

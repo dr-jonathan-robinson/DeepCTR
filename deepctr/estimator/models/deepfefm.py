@@ -77,7 +77,7 @@ def DeepFEFMEstimator(linear_feature_columns, dnn_feature_columns,
                     dnn_input, training=train_flag)
 
                 dnn_logit = tf.keras.layers.Dense(
-                    1, use_bias=False, kernel_initializer=tf.keras.initializers.glorot_normal(seed))(dnn_output)
+                    1, use_bias=False, kernel_initializer=tf.compat.v1.keras.initializers.glorot_normal(seed))(dnn_output)
 
                 final_logit_components.append(dnn_logit)
 
