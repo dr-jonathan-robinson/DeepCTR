@@ -39,13 +39,23 @@ def DeepFM(linear_feature_columns, dnn_feature_columns, fm_group=(DEFAULT_GROUP_
     :return: A Keras model instance.
     """
 
-    features = build_input_features(
-        linear_feature_columns + dnn_feature_columns)
+    # features = build_input_features(
+    #     linear_feature_columns + dnn_feature_columns)
+
+    # inputs_list = list(features.values())
+
+    # linear_logit = get_linear_logit(features, linear_feature_columns, seed=seed, prefix='linear',
+    #                                 l2_reg=l2_reg_linear)
+
+    print("DeepFM: Starting model creation")
+    features = build_input_features(linear_feature_columns + dnn_feature_columns)
+    print("Features built:", features)
 
     inputs_list = list(features.values())
 
     linear_logit = get_linear_logit(features, linear_feature_columns, seed=seed, prefix='linear',
                                     l2_reg=l2_reg_linear)
+    print("Linear logit shape:", linear_logit.shape)
 
     group_embedding_dict, dense_value_list = input_from_feature_columns(features, dnn_feature_columns, l2_reg_embedding,
                                                                         seed, support_group=True)

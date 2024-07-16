@@ -122,11 +122,8 @@ class Hash(Layer):
 
 
 class Linear(Layer):
-
     def __init__(self, l2_reg=0.0, mode=0, use_bias=False, seed=1024, **kwargs):
-
         self.l2_reg = l2_reg
-        # self.l2_reg = tf.contrib.layers.l2_regularizer(float(l2_reg_linear))
         if mode not in [0, 1, 2]:
             raise ValueError("mode must be 0,1 or 2")
         self.mode = mode
@@ -136,26 +133,67 @@ class Linear(Layer):
 
     def build(self, input_shape):
         if self.use_bias:
-            self.bias = self.add_weight(name='linear_bias',
-                                        shape=(1,),
-                                        initializer=Zeros(),
-                                        trainable=True)
+            self.bias = self.add_weight(
+                name='linear_bias',
+                shape=(1,),
+                initializer=Zeros(),
+                trainable=True
+            )
+        
         if self.mode == 1:
             self.kernel = self.add_weight(
-                'linear_kernel',
-                shape=[int(input_shape[-1]), 1],
-                initializer=glorot_normal(self.seed),
+                name='linear_kernel',
+                shape=(int(input_shape[-1]), 1),
+                initializer=glorot_normal(seed=self.seed),
                 regularizer=l2(self.l2_reg),
-                trainable=True)
+                trainable=True
+            )
         elif self.mode == 2:
             self.kernel = self.add_weight(
-                'linear_kernel',
-                shape=[int(input_shape[1][-1]), 1],
-                initializer=glorot_normal(self.seed),
+                name='linear_kernel',
+                shape=(int(input_shape[1][-1]), 1),
+                initializer=glorot_normal(seed=self.seed),
                 regularizer=l2(self.l2_reg),
-                trainable=True)
+                trainable=True
+            )
 
-        super(Linear, self).build(input_shape)  # Be sure to call this somewhere!
+        super(Linear, self).build(input_shape)
+
+# class Linear(Layer):
+
+#     def __init__(self, l2_reg=0.0, mode=0, use_bias=False, seed=1024, **kwargs):
+
+#         self.l2_reg = l2_reg
+#         # self.l2_reg = tf.contrib.layers.l2_regularizer(float(l2_reg_linear))
+#         if mode not in [0, 1, 2]:
+#             raise ValueError("mode must be 0,1 or 2")
+#         self.mode = mode
+#         self.use_bias = use_bias
+#         self.seed = seed
+#         super(Linear, self).__init__(**kwargs)
+
+#     def build(self, input_shape):
+#         if self.use_bias:
+#             self.bias = self.add_weight(name='linear_bias',
+#                                         shape=(1,),
+#                                         initializer=Zeros(),
+#                                         trainable=True)
+#         if self.mode == 1:
+#             self.kernel = self.add_weight(
+#                 'linear_kernel',
+#                 shape=(int(input_shape[-1]), 1),
+#                 initializer=glorot_normal(self.seed),
+#                 regularizer=l2(self.l2_reg),
+#                 trainable=True)
+#         elif self.mode == 2:
+#             self.kernel = self.add_weight(
+#                 'linear_kernel',
+#                 shape=(int(input_shape[1][-1]), 1),
+#                 initializer=glorot_normal(self.seed),
+#                 regularizer=l2(self.l2_reg),
+#                 trainable=True)
+
+#         super(Linear, self).build(input_shape)  # Be sure to call this somewhere!
 
     def call(self, inputs, **kwargs):
         if self.mode == 0:
@@ -325,12 +363,29 @@ class _Add(Layer):
         return Add()(inputs)
 
 
+# def add_func(inputs):
+#     if not isinstance(inputs, list):
+#         return inputs
+#     if len(inputs) == 1:
+#         return inputs[0]
+#     return _Add()(inputs)
+
+class CustomAdd(Layer):
+    def __init__(self, **kwargs):
+        super(CustomAdd, self).__init__(**kwargs)
+        self.add = Add()
+
+    def call(self, inputs):
+        if not inputs:
+            return tf.constant([[0.0]])
+        return self.add(inputs)
+
 def add_func(inputs):
     if not isinstance(inputs, list):
         return inputs
     if len(inputs) == 1:
         return inputs[0]
-    return _Add()(inputs)
+    return CustomAdd()(inputs)
 
 
 def combined_dnn_input(sparse_embedding_list, dense_value_list):

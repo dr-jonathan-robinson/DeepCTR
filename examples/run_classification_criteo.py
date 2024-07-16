@@ -1,52 +1,88 @@
 import pandas as pd
+import numpy as np
+import tensorflow as tf
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.feature_extraction import FeatureHasher
 
-from deepctr.models import DeepFM
 from deepctr.feature_column import SparseFeat, DenseFeat, get_feature_names
+from deepctr.models import DeepFM
 
-if __name__ == "__main__":
-    data = pd.read_csv('./criteo_sample.txt')
+def print_feature_info(feature_columns):
+    for fc in feature_columns:
+        print(f"Feature: {fc.name}, Type: {type(fc)}, Dtype: {fc.dtype}, Vocab Size: {fc.vocabulary_size if hasattr(fc, 'vocabulary_size') else 'N/A'}")
 
-    sparse_features = ['C' + str(i) for i in range(1, 27)]
-    dense_features = ['I' + str(i) for i in range(1, 14)]
+# Load data
+data = pd.read_csv('./criteo_sample.txt')
 
-    data[sparse_features] = data[sparse_features].fillna('-1', )
-    data[dense_features] = data[dense_features].fillna(0, )
-    target = ['label']
+sparse_features = ['C' + str(i) for i in range(1, 27)]
+dense_features = ['I' + str(i) for i in range(1, 14)]
+target = ['label']
 
-    # 1.Label Encoding for sparse features,and do simple Transformation for dense features
-    for feat in sparse_features:
-        lbe = LabelEncoder()
-        data[feat] = lbe.fit_transform(data[feat])
-    mms = MinMaxScaler(feature_range=(0, 1))
-    data[dense_features] = mms.fit_transform(data[dense_features])
+# Fill na
+data[sparse_features] = data[sparse_features].fillna('-1', )
+data[dense_features] = data[dense_features].fillna(0, )
 
-    # 2.count #unique features for each sparse field,and record dense feature field name
+# Feature hashing for sparse features
+n_features = 1000  # You can adjust this value
+hashers = {}
+for feat in sparse_features:
+    hasher = FeatureHasher(n_features=n_features, input_type='string')
+    # Convert the series to a list of single-element lists
+    feature_list = [[str(x)] for x in data[feat]]
+    hashed_feature = hasher.fit_transform(feature_list).toarray()
+    for i in range(n_features):
+        data[f"{feat}_hash_{i}"] = hashed_feature[:, i].copy()
+    hashers[feat] = hasher
+    # Debug"
+    # print(f"Feature {feat} hashed into {n_features} features")
 
-    fixlen_feature_columns = [SparseFeat(feat, vocabulary_size=data[feat].max() + 1, embedding_dim=4)
-                              for i, feat in enumerate(sparse_features)] + [DenseFeat(feat, 1, )
-                                                                            for feat in dense_features]
+# Convert dense features to float32
+for feat in dense_features:
+    data[feat] = data[feat].astype('float32')
 
-    dnn_feature_columns = fixlen_feature_columns
-    linear_feature_columns = fixlen_feature_columns
+# Normalize dense features
+mms = MinMaxScaler(feature_range=(0, 1))
+data[dense_features] = mms.fit_transform(data[dense_features])
 
-    feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
+# Generate train and test data
+train, test = train_test_split(data, test_size=0.2, random_state=2020)
 
-    # 3.generate input data for model
+# Prepare feature columns
+fixlen_feature_columns = []
+for feat in sparse_features:
+    for i in range(n_features):
+        fixlen_feature_columns.append(SparseFeat(f"{feat}_hash_{i}", vocabulary_size=2, embedding_dim=4, dtype=tf.int32))
+fixlen_feature_columns += [DenseFeat(feat, 1, dtype=tf.float32) for feat in dense_features]
 
-    train, test = train_test_split(data, test_size=0.2, random_state=2020)
-    train_model_input = {name: train[name] for name in feature_names}
-    test_model_input = {name: test[name] for name in feature_names}
+dnn_feature_columns = fixlen_feature_columns
+linear_feature_columns = fixlen_feature_columns
 
-    # 4.Define Model,train,predict and evaluate
+feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
+
+# Debug: Print feature information
+# print("\nLinear Feature Columns:")
+# print_feature_info(linear_feature_columns)
+# print("\nDNN Feature Columns:")
+# print_feature_info(dnn_feature_columns)
+
+train_model_input = {name: train[name].values for name in feature_names}
+test_model_input = {name: test[name].values for name in feature_names}
+
+# Define the model
+def create_and_fit_model(linear_feature_columns, dnn_feature_columns, train_model_input, train_target, **kwargs):
     model = DeepFM(linear_feature_columns, dnn_feature_columns, task='binary')
-    model.compile("adam", "binary_crossentropy",
-                  metrics=['binary_crossentropy'], )
+    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=['AUC'])
+    history = model.fit(train_model_input, train_target, **kwargs)
+    return model, history
 
-    history = model.fit(train_model_input, train[target].values,
-                        batch_size=256, epochs=10, verbose=2, validation_split=0.2, )
-    pred_ans = model.predict(test_model_input, batch_size=256)
-    print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
-    print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
+# Create and train the model
+model, history = create_and_fit_model(linear_feature_columns, dnn_feature_columns, 
+                                      train_model_input, train[target].values,
+                                      batch_size=256, epochs=10, verbose=2, validation_split=0.2)
+
+# Evaluate the model
+pred_ans = model.predict(test_model_input, batch_size=256)
+print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
+print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
